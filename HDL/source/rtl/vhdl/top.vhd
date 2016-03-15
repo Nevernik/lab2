@@ -24,6 +24,8 @@ entity top is
     clk_i          : in  std_logic;
     reset_n_i      : in  std_logic;
     -- vga
+	 direct_mode_i  : in std_logic;
+	 display_mode_i : in std_logic_vector(1 downto 0);
     vga_hsync_o    : out std_logic;
     vga_vsync_o    : out std_logic;
     blank_o        : out std_logic;
@@ -211,14 +213,14 @@ begin
     clk_i              => clk_i,
     reset_n_i          => reset_n_i,
     --
-    direct_mode_i      => direct_mode,
+    direct_mode_i      => direct_mode_i,
     dir_red_i          => dir_red,
     dir_green_i        => dir_green,
     dir_blue_i         => dir_blue,
     dir_pixel_column_o => dir_pixel_column,
     dir_pixel_row_o    => dir_pixel_row,
     -- cfg
-    display_mode_i     => display_mode,  -- 01 - text mode, 10 - graphics mode, 11 - text & graphics
+    display_mode_i     => display_mode_i,  -- 01 - text mode, 10 - graphics mode, 11 - text & graphics
     -- text mode interface
     text_addr_i        => char_address,
     text_data_i        => char_value,
@@ -250,6 +252,24 @@ begin
   --dir_red
   --dir_green
   --dir_blue
+	dir_red  <=  x"ff" when dir_pixel_column >= 0 and dir_pixel_column < H_RES/8 else --crvena
+					 x"ff" when dir_pixel_column >= H_RES/8 and dir_pixel_column < 2*H_RES/8 else --magenta
+					 x"ff" when dir_pixel_column >= 2*H_RES/8 and dir_pixel_column < 3*H_RES/8 else --bela
+					 x"ff" when dir_pixel_column >= 3*H_RES/8 and dir_pixel_column < 4*H_RES/8 else --zuta
+					 x"00"; --zelena, sv. plava, plava, crna
+					
+	dir_green <= x"ff" when dir_pixel_column >= 2*H_RES/8  and dir_pixel_column < 3*H_RES/8 else --bela
+					 x"ff" when dir_pixel_column >= 3*H_RES/8 and dir_pixel_column < 4*H_RES/8 else --zuta
+					 x"ff" when dir_pixel_column >= 4*H_RES/8 and dir_pixel_column < 5*H_RES/8 else -- zelena
+					 x"ff" when dir_pixel_column >= 5*H_RES/8 and dir_pixel_column < 6*H_RES/8 else --sv. plava
+					 x"00";--crvena, magenta, plava, crna
+					 
+	dir_blue  <= x"ff" when dir_pixel_column >= H_RES/8 and dir_pixel_column < 2*H_RES/8 else --magenta
+					 x"ff" when dir_pixel_column >= 2*H_RES/8 and dir_pixel_column < 3*H_RES/8 else -- bela
+					 x"ff" when dir_pixel_column >= 5*H_RES/8 and dir_pixel_column < 6*H_RES/8 else --sv. plava
+					 x"ff" when dir_pixel_column >= 6*H_RES/8 and dir_pixel_column < 7*H_RES/8 else --plava
+					 x"00";--crvena, zuta, zelena, crna
+
  
   -- koristeci signale realizovati logiku koja pise po TXT_MEM
   --char_address
