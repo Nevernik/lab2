@@ -337,10 +337,12 @@ begin
   --pixel_we
    pixel_address <= graph_addr_reg;
    with pixel_address select pixel_value <=
-  							x"FFFFFFFF" when conv_std_logic_vector(22, MEM_ADDR_WIDTH),
-  							x"FFFFFFFF" when conv_std_logic_vector(23, MEM_ADDR_WIDTH),
-  							x"FFFFFFFF" when conv_std_logic_vector(24, MEM_ADDR_WIDTH),
-  							
+  							x"FFFFFFFF" when conv_integer(pixel_address)>602 and conv_integer(pixel_address)<606,
+  							x"FFFFFFFF" when conv_integer(pixel_address)>618 and conv_integer(pixel_address)<622,
+  							x"FFFFFFFF" when conv_integer(pixel_address)>638 and conv_integer(pixel_address)<642,
+  							x"FFFFFFFF" when conv_integer(pixel_address)>658 and conv_integer(pixel_address)<662,
+  							x"FFFFFFFF" when conv_integer(pixel_address)>678 and conv_integer(pixel_address)<682,
+  							x"00000000" when others;
 
 	
    pixel_we <= '1';
