@@ -105,6 +105,20 @@ architecture rtl of top is
     );
   end component;
   
+  component reg
+	generic(
+		WIDTH    : positive := 1;
+		RST_INIT : integer := 0
+	);
+	port(
+		i_clk  : in  std_logic;
+		in_rst : in  std_logic;
+		i_d    : in  std_logic_vector(WIDTH-1 downto 0);
+		o_q    : out std_logic_vector(WIDTH-1 downto 0)
+	);
+  end component;
+	
+	
   component ODDR2
   generic(
    DDR_ALIGNMENT : string := "NONE";
@@ -123,12 +137,14 @@ architecture rtl of top is
   );
   end component;
   
-  
   constant update_period     : std_logic_vector(31 downto 0) := conv_std_logic_vector(1, 32);
   
   constant GRAPH_MEM_ADDR_WIDTH : natural := MEM_ADDR_WIDTH + 6;-- graphics addres is scales with minumum char size 8*8 log2(64) = 6
   
   -- text
+  signal next_txt_addr		  : std_logic_vector(MEM_ADDR_WIDTH-1 downto 0);
+  signal txt_addr_reg		  : std_logic_vector(MEM_ADDR_WIDTH-1 downto 0);
+
   signal message_lenght      : std_logic_vector(MEM_ADDR_WIDTH-1 downto 0);
   signal graphics_lenght     : std_logic_vector(GRAPH_MEM_ADDR_WIDTH-1 downto 0);
   
@@ -247,7 +263,19 @@ begin
     green_o            => green_o,
     blue_o             => blue_o     
   );
-  
+    next_txt_addr <= txt_addr_reg + 1 when txt_addr_reg < 1200-1
+												else conv_std_logic_vector(0, MEM_ADDR_WIDTH);
+   txt_addr_cnt: reg
+	generic map(
+		WIDTH    => MEM_ADDR_WIDTH,
+		RST_INIT => 0
+	)
+	port map(
+		i_clk  => pix_clock_s,
+		in_rst => vga_rst_n_s,
+		i_d    => next_txt_addr,
+		o_q    => txt_addr_reg
+	);
   -- na osnovu signala iz vga_top modula dir_pixel_column i dir_pixel_row realizovati logiku koja genereise
   --dir_red
   --dir_green
@@ -275,7 +303,15 @@ begin
   --char_address
   --char_value
   --char_we
-  
+   char_address <= txt_addr_reg;
+	with char_address select char_value <=
+							o"22" when conv_std_logic_vector(1, MEM_ADDR_WIDTH),
+							o"24" when conv_std_logic_vector(2, MEM_ADDR_WIDTH),
+							o"55" when conv_std_logic_vector(3, MEM_ADDR_WIDTH),
+							o"22" when conv_std_logic_vector(4, MEM_ADDR_WIDTH),
+							o"13" when conv_std_logic_vector(5, MEM_ADDR_WIDTH),
+							o"40" when others;
+	char_we <= '1';
   -- koristeci signale realizovati logiku koja pise po GRAPH_MEM
   --pixel_address
   --pixel_value
