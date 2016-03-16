@@ -174,6 +174,9 @@ architecture rtl of top is
   signal dir_blue            : std_logic_vector(7 downto 0);
   signal dir_pixel_column    : std_logic_vector(10 downto 0);
   signal dir_pixel_row       : std_logic_vector(10 downto 0);
+  signal graph_addr_reg		  : std_logic_vector(GRAPH_MEM_ADDR_WIDTH - 1 downto 0);
+  signal next_graph_addr	  : std_logic_vector(GRAPH_MEM_ADDR_WIDTH - 1 downto 0);
+  signal pixel_we_s 			  : std_logic;  
 
 begin
 
@@ -276,6 +279,22 @@ begin
 		i_d    => next_txt_addr,
 		o_q    => txt_addr_reg
 	);
+	
+	next_graph_addr <= graph_addr_reg + 1 when graph_addr_reg < 9600-1
+														else conv_std_logic_vector(9600, GRAPH_MEM_ADDR_WIDTH);
+	
+	graph_addr_cnt: reg
+	generic map(
+		WIDTH    => GRAPH_MEM_ADDR_WIDTH,
+		RST_INIT => 0
+	)
+	port map(
+		i_clk  => pix_clock_s,
+		in_rst => vga_rst_n_s,
+		i_d    => next_graph_addr,
+		o_q    => graph_addr_reg
+	);
+
   -- na osnovu signala iz vga_top modula dir_pixel_column i dir_pixel_row realizovati logiku koja genereise
   --dir_red
   --dir_green
@@ -316,6 +335,20 @@ begin
   --pixel_address
   --pixel_value
   --pixel_we
-  
+    
+  pixel_value <= '1' when	dir_pixel_row 	= 50
+									and dir_pixel_row = 	150
+									and dir_pixel_column	= 60
+									and dir_pixel_column	= 150
+											else '0';
+	
+  pixel_we_s <= '1' '1' when	dir_pixel_row 	= 50
+									and dir_pixel_row = 	150
+									and dir_pixel_column	= 60
+									and dir_pixel_column	= 150
+											else '0';
+	
+	pixel_we <= pixel_we_s when graph_addr_reg < 9600
+									else '0';
   
 end rtl;
