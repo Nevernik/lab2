@@ -174,9 +174,8 @@ architecture rtl of top is
   signal dir_blue            : std_logic_vector(7 downto 0);
   signal dir_pixel_column    : std_logic_vector(10 downto 0);
   signal dir_pixel_row       : std_logic_vector(10 downto 0);
-  signal graph_addr_reg		  : std_logic_vector(GRAPH_MEM_ADDR_WIDTH - 1 downto 0);
-  signal next_graph_addr	  : std_logic_vector(GRAPH_MEM_ADDR_WIDTH - 1 downto 0);
-  signal pixel_we_s 			  : std_logic;  
+  signal graph_addr_reg      : std_logic_vector(GRAPH_MEM_ADDR_WIDTH - 1 downto 0);
+  signal next_graph_addr     : std_logic_vector(GRAPH_MEM_ADDR_WIDTH - 1 downto 0);
 
 begin
 
@@ -280,10 +279,10 @@ begin
 		o_q    => txt_addr_reg
 	);
 	
-	next_graph_addr <= graph_addr_reg + 1 when graph_addr_reg < 9600-1
-														else conv_std_logic_vector(9600, GRAPH_MEM_ADDR_WIDTH);
+    next_graph_addr <= graph_addr_reg + 1 when graph_addr_reg < 9600-1
+												else conv_std_logic_vector(0, GRAPH_MEM_ADDR_WIDTH);
 	
-	graph_addr_cnt: reg
+   graph_addr_cnt: reg
 	generic map(
 		WIDTH    => GRAPH_MEM_ADDR_WIDTH,
 		RST_INIT => 0
@@ -323,22 +322,27 @@ begin
   --char_value
   --char_we
    char_address <= txt_addr_reg;
-	with char_address select char_value <=
+   with char_address select char_value <=
 							o"22" when conv_std_logic_vector(1, MEM_ADDR_WIDTH),
 							o"24" when conv_std_logic_vector(2, MEM_ADDR_WIDTH),
 							o"55" when conv_std_logic_vector(3, MEM_ADDR_WIDTH),
 							o"22" when conv_std_logic_vector(4, MEM_ADDR_WIDTH),
 							o"13" when conv_std_logic_vector(5, MEM_ADDR_WIDTH),
 							o"40" when others;
-	char_we <= '1';
+   char_we <= '1';
+   
   -- koristeci signale realizovati logiku koja pise po GRAPH_MEM
   --pixel_address
   --pixel_value
   --pixel_we
-  with pixel_address select pixel_value <=
+   pixel_address <= graph_addr_reg;
+   with pixel_address select pixel_value <=
+  							x"FFFFFFFF" when conv_std_logic_vector(22, MEM_ADDR_WIDTH),
+  							x"FFFFFFFF" when conv_std_logic_vector(23, MEM_ADDR_WIDTH),
+  							x"FFFFFFFF" when conv_std_logic_vector(24, MEM_ADDR_WIDTH),
+  							
 
 	
-	pixel_we <= pixel_we_s when graph_addr_reg < 9600
-									else '0';
+   pixel_we <= '1';
   
 end rtl;
