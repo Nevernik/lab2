@@ -335,18 +335,8 @@ begin
   --pixel_address
   --pixel_value
   --pixel_we
-    
-  pixel_value <= '1' when	dir_pixel_row 	= 50
-									and dir_pixel_row = 	150
-									and dir_pixel_column	= 60
-									and dir_pixel_column	= 150
-											else '0';
-	
-  pixel_we_s <= '1' '1' when	dir_pixel_row 	= 50
-									and dir_pixel_row = 	150
-									and dir_pixel_column	= 60
-									and dir_pixel_column	= 150
-											else '0';
+  with pixel_address select pixel_value <=
+
 	
 	pixel_we <= pixel_we_s when graph_addr_reg < 9600
 									else '0';
